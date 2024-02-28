@@ -2,7 +2,11 @@ package main
 
 import (
 	"crypto/tls"
+	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
+	"os"
 
 	"golang.org/x/crypto/acme/autocert"
 )
@@ -19,12 +23,47 @@ func main() {
 		w.Write([]byte("Hello world"))
 	})
 
+	conf, err := LoadServerConfig("config.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cert, err := conf.LoadCertificate()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	s := &http.Server{
 		Addr: ":https",
 		TLSConfig: &tls.Config{
-			GetCertificate: m.GetCertificate,
+			Certificates: []tls.Certificate{cert},
 		},
 	}
 
 	s.ListenAndServeTLS("", "")
+}
+
+type ServerConfig struct {
+	CertDir string `json:"certDir"`
+}
+
+func LoadServerConfig(path string) (ServerConfig, error) {
+	source, err := os.ReadFile(path)
+	if err != nil {
+		return ServerConfig{}, err
+	}
+	var config ServerConfig
+	err = json.Unmarshal(source, &config)
+	if err != nil {
+		return ServerConfig{}, err
+	}
+
+	return config, nil
+}
+
+func (conf *ServerConfig) LoadCertificate() (tls.Certificate, error) {
+	certFile := fmt.Sprintf("%s/cert.pem", conf.CertDir)
+	keyFile := fmt.Sprintf("%s/privkey.pem", conf.CertDir)
+
+	return tls.LoadX509KeyPair(certFile, keyFile)
 }
