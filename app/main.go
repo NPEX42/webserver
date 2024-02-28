@@ -17,9 +17,7 @@ func main() {
 	//	Email:      "gvenn@npex42.dev",
 	//}
 
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello world"))
-	})
+	http.Handle("/", RequestLogger(log.Default(), http.FileServer(http.Dir("./static"))))
 
 	conf, err := LoadServerConfig("config.json")
 	if err != nil {
