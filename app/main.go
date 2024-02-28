@@ -17,6 +17,8 @@ func main() {
 	//	Email:      "gvenn@npex42.dev",
 	//}
 
+	log.Default().SetFlags(0)
+
 	http.Handle("/", RequestLogger(log.Default(), http.FileServer(http.Dir("./static"))))
 
 	conf, err := LoadServerConfig("config.json")

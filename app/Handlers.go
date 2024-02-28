@@ -12,6 +12,6 @@ func RequestLogger(logger *log.Logger, next http.Handler) http.HandlerFunc {
 		next.ServeHTTP(w, r)
 		end := time.Now()
 		duration := end.Sub(start)
-		logger.Printf("%s,%s,%q,%d,%d", r.Method, r.RemoteAddr, r.URL.Path, w.Header().Get("X-Status-Code"), duration.Milliseconds())
+		logger.Printf("%s,%s,%s,%q,%d,%d", time.Now(), r.Method, r.RemoteAddr, r.URL.Path, w.Header().Get("X-Status-Code"), duration.Milliseconds())
 	}
 }
