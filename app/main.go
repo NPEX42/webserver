@@ -60,7 +60,7 @@ func LoadServerConfig(path string) (ServerConfig, error) {
 }
 
 func (conf *ServerConfig) LoadCertificate() (tls.Certificate, error) {
-	certFile := fmt.Sprintf("%s/cert.pem", conf.CertDir)
+	certFile := fmt.Sprintf("%s/fullchain.pem", conf.CertDir)
 	keyFile := fmt.Sprintf("%s/privkey.pem", conf.CertDir)
 
 	return tls.LoadX509KeyPair(certFile, keyFile)
