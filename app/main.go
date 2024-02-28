@@ -12,6 +12,7 @@ func main() {
 		Prompt:     autocert.AcceptTOS,
 		HostPolicy: autocert.HostWhitelist("npex42.dev"),
 		Cache:      autocert.DirCache("certs"),
+		Email:      "gvenn@npex42.dev",
 	}
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
