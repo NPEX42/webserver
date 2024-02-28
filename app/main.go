@@ -1,26 +1,29 @@
 package main
 
 import (
+	"crypto/tls"
 	"net/http"
 
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"golang.org/x/crypto/acme/autocert"
 )
 
 func main() {
-	e := echo.New()
-	e.AutoTLSManager.HostPolicy = autocert.HostWhitelist("npex42.dev")
-	// Cache certificates to avoid issues with rate limits (https://letsencrypt.org/docs/rate-limits)
-	e.AutoTLSManager.Cache = autocert.DirCache("./certs/cache")
-	e.Use(middleware.Recover())
-	e.Use(middleware.Logger())
-	e.GET("/", func(c echo.Context) error {
-		return c.HTML(http.StatusOK, `
-			<h1>Welcome to Echo!</h1>
-			<h3>TLS certificates automatically installed from Let's Encrypt :)</h3>
-		`)
+	m := autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		HostPolicy: autocert.HostWhitelist("npex42.dev"),
+		Cache:      autocert.DirCache("certs"),
+	}
+
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Hello world"))
 	})
 
-	e.Logger.Fatal(e.StartAutoTLS(":443"))
+	s := &http.Server{
+		Addr: ":https",
+		TLSConfig: &tls.Config{
+			GetCertificate: m.GetCertificate,
+		},
+	}
+
+	s.ListenAndServeTLS("", "")
 }
