@@ -20,6 +20,7 @@ func main() {
 	log.Default().SetFlags(0)
 
 	http.Handle("/", RequestLogger(log.Default(), http.FileServer(http.Dir("./static"))))
+	http.Handle("/hooks/gh_push", RequestLogger(log.Default(), WebhookPushHandler()))
 
 	conf, err := LoadServerConfig("config.json")
 	if err != nil {
@@ -28,7 +29,15 @@ func main() {
 
 	cert, err := conf.LoadCertificate()
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Failed To Locate TLS Certificates, Falling back to HTTP.\n Error: %v\n", err)
+		s := &http.Server{
+			Addr: ":http",
+		}
+		if conf.AllowHTTP {
+			log.Println("Starting Server @ :80")
+			log.Fatal(s.ListenAndServe())
+		}
+		return
 	}
 
 	s := &http.Server{
@@ -42,7 +51,8 @@ func main() {
 }
 
 type ServerConfig struct {
-	CertDir string `json:"certDir"`
+	CertDir   string `json:"certDir"`
+	AllowHTTP bool   `json:"allowHTTP"`
 }
 
 func LoadServerConfig(path string) (ServerConfig, error) {
@@ -64,4 +74,20 @@ func (conf *ServerConfig) LoadCertificate() (tls.Certificate, error) {
 	keyFile := fmt.Sprintf("%s/privkey.pem", conf.CertDir)
 
 	return tls.LoadX509KeyPair(certFile, keyFile)
+}
+
+type WrappedResponseWriter struct {
+	http.ResponseWriter
+	statusCode int
+}
+
+func NewLoggingResponseWriter(w http.ResponseWriter) *WrappedResponseWriter {
+	// WriteHeader(int) is not called if our response implicitly returns 200 OK, so
+	// we default to that status code.
+	return &WrappedResponseWriter{w, http.StatusOK}
+}
+
+func (wrw *WrappedResponseWriter) WriteHeader(code int) {
+	wrw.statusCode = code
+	wrw.ResponseWriter.WriteHeader(code)
 }
