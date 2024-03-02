@@ -1,6 +1,8 @@
 module github.com/NPEX42/webserver
 
-go 1.18
+go 1.21
+
+toolchain go1.22.0
 
 require (
 	github.com/cbrgm/githubevents v1.13.0
