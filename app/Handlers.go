@@ -19,7 +19,7 @@ var (
 
 func init() {
 	Handle = *githubevents.New("dd3d80f7f36a1af8ddf1cb0747051d882acebdb4c047792265f1f4f8679cc0826d64ea64f9ef8cc2e0fa93ceb7106597780895605c5e42c453878108ebe35349")
-	Handle.OnPushEventAny(func(_deliveryID, _eventName string, event *github.PushEvent) error {
+	Handle.OnPushEventAny(func(_, _ string, event *github.PushEvent) error {
 		log.Printf("Repo %v Pushed.", *event.Repo.Name)
 		exec.Command("git", "stash")
 		exec.Command("git", "pull")
@@ -44,7 +44,7 @@ func WebhookPushHandler() http.Handler {
 	return http.Handler(http.HandlerFunc(WebhookPush))
 }
 
-func WebhookPush(w http.ResponseWriter, r *http.Request) {
+func WebhookPush(_ http.ResponseWriter, r *http.Request) {
 	err := Handle.HandleEventRequest(r)
 	fmt.Println(err)
 }
