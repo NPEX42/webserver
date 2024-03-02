@@ -26,6 +26,14 @@ func init() {
 		return nil
 	})
 
+	Handle.OnAfterAny(func(_, _ string, _ any) error {
+		time.Sleep(10 * time.Second)
+		if err := Pull(); err != nil {
+			return err
+		}
+		return nil
+	})
+
 	GH = *github.NewClient(nil)
 }
 
