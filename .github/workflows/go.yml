@@ -19,10 +19,10 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.18'
+        go-version: '1.22'
 
     - name: Build
-      run: go build -v -o s ./app
+      run: go build -o server -v ./app
 
     - name: Test
       run: go test -v ./...
