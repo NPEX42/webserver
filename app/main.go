@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/user"
 )
 
 func main() {
@@ -30,11 +31,24 @@ func main() {
 	cert, err := conf.LoadCertificate()
 	if err != nil {
 		log.Printf("Failed To Locate TLS Certificates, Falling back to HTTP.\n Error: %v\n", err)
-		s := &http.Server{
-			Addr: ":http",
+		currentUser, err := user.Current()
+		if err != nil {
+			log.Fatalf("Failed To Get Current User. %v\n", err)
+		}
+
+		var s *http.Server
+
+		if currentUser.Username == "root" {
+			s = &http.Server{
+				Addr: ":http",
+			}
+		} else {
+			s = &http.Server{
+				Addr: ":8080",
+			}
 		}
 		if conf.AllowHTTP {
-			log.Println("Starting Server @ :80")
+			log.Printf("Starting Server @ %v\n", s.Addr)
 			log.Fatal(s.ListenAndServe())
 		}
 		return
