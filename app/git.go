@@ -13,7 +13,7 @@ func Pull() error {
 		return err
 	}
 
-	err = worktree.Pull(&git.PullOptions{RemoteName: "gh"})
+	err = worktree.Pull(&git.PullOptions{RemoteName: "origin"})
 	if err != nil {
 		return err
 	}
