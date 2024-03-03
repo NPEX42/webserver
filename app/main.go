@@ -22,6 +22,7 @@ func main() {
 
 	http.Handle("/", RequestLogger(log.Default(), http.FileServer(http.Dir("./static"))))
 	http.Handle("/hooks/gh_push", RequestLogger(log.Default(), WebhookPushHandler()))
+	http.Handle("/hooks/pull", RequestLogger(log.Default(), http.HandlerFunc(Restart)))
 
 	conf, err := LoadServerConfig("config.json")
 	if err != nil {
