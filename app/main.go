@@ -4,11 +4,28 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"os/user"
+	"syscall"
+	"time"
 )
+
+var (
+	logger  *log.Logger
+	logFile *os.File
+)
+
+func init() {
+	logFile, err := os.Create("logs/log.csv")
+	if err != nil {
+		log.Fatal("Failed To Create / Open logs/log.csv")
+	}
+	logger = log.New(logFile, "", 0)
+}
 
 func main() {
 	//m := autocert.Manager{
@@ -20,9 +37,15 @@ func main() {
 
 	log.Default().SetFlags(0)
 
-	http.Handle("/", RequestLogger(log.Default(), http.FileServer(http.Dir("./static"))))
-	http.Handle("/hooks/gh_push", RequestLogger(log.Default(), WebhookPushHandler()))
-	http.Handle("/hooks/pull", RequestLogger(log.Default(), http.HandlerFunc(Restart)))
+	http.Handle("/", RequestLogger(logger, http.FileServer(http.Dir("./static"))))
+	http.Handle("/hooks/gh_push", RequestLogger(logger, WebhookPushHandler()))
+	http.Handle("/hooks/pull", RequestLogger(logger, http.HandlerFunc(Restart)))
+
+	sigChan := make(chan os.Signal, 1)
+
+	signal.Notify(sigChan, syscall.SIGINT)
+
+	go SignalLoop(sigChan)
 
 	conf, err := LoadServerConfig("config.json")
 	if err != nil {
@@ -105,4 +128,29 @@ func NewLoggingResponseWriter(w http.ResponseWriter) *WrappedResponseWriter {
 func (wrw *WrappedResponseWriter) WriteHeader(code int) {
 	wrw.statusCode = code
 	wrw.ResponseWriter.WriteHeader(code)
+}
+
+func SignalLoop(sigChan chan os.Signal) {
+	log.Println("[SignalHandler] - Started")
+	for {
+		SignalHandler(<-sigChan)
+	}
+}
+
+func SignalHandler(sig os.Signal) {
+	switch sig {
+	case syscall.SIGINT:
+		{
+			log.Println("[SIGINT] Shutting Down...")
+			now := time.Now()
+			copyPath := fmt.Sprintf("log-%d%d%d.csv", now.Day(), now.Month(), now.Year())
+			copyLog, err := os.Create(copyPath)
+			if err == nil {
+				io.Copy(copyLog, logFile)
+			} else {
+				log.Fatalln("Failed To Copy Log file...")
+			}
+			os.Exit(0)
+		}
+	}
 }
