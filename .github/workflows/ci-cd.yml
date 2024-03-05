@@ -1,0 +1,14 @@
+name: CI-CD
+
+on:
+  pull_request:
+    types:
+      - closed
+    branches: ['trunk']
+
+jobs:
+  Notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: CURL
+        run: curl -li https://npex42.dev/hooks/pull

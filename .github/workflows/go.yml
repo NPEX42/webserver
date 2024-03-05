@@ -28,6 +28,3 @@ jobs:
 
     - name: Test
       run: go test -v ./...
-
-    - name: SendHook
-      run: curl https://npex42.dev/hooks/pull
