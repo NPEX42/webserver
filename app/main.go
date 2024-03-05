@@ -149,7 +149,7 @@ func SignalHandler(sig os.Signal) {
 
 func backupLogs() {
 	now := time.Now()
-	copyPath := fmt.Sprintf("log-%d%d%d.csv", now.Day(), now.Month(), now.Year())
+	copyPath := fmt.Sprintf("logs/log-%d%d%d.csv", now.Day(), now.Month(), now.Year())
 	copyLog, err := os.Create(copyPath)
 	if err == nil {
 		io.Copy(copyLog, logFile)
