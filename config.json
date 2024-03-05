@@ -1,4 +1,4 @@
 {
-  "certDir": "./certs",
+  "certDir": "../certs",
   "allowHTTP": true
 }
