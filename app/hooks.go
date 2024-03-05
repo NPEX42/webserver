@@ -11,5 +11,6 @@ func Restart(w http.ResponseWriter, _ *http.Request) {
 	fmt.Fprint(w, "Pulling...")
 	Pull()
 	exec.Command("go", "build", "-o", "server", "./app").Run()
+	SignalHandler(syscall.SIGHUP)
 	syscall.Exec("./server", []string{}, []string{})
 }
