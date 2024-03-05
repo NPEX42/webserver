@@ -142,15 +142,18 @@ func SignalHandler(sig os.Signal) {
 	case syscall.SIGINT:
 		{
 			log.Println("[SIGINT] Shutting Down...")
-			now := time.Now()
-			copyPath := fmt.Sprintf("log-%d%d%d.csv", now.Day(), now.Month(), now.Year())
-			copyLog, err := os.Create(copyPath)
-			if err == nil {
-				io.Copy(copyLog, logFile)
-			} else {
-				log.Fatalln("Failed To Copy Log file...")
-			}
 			os.Exit(0)
 		}
+	}
+}
+
+func backupLogs() {
+	now := time.Now()
+	copyPath := fmt.Sprintf("log-%d%d%d.csv", now.Day(), now.Month(), now.Year())
+	copyLog, err := os.Create(copyPath)
+	if err == nil {
+		io.Copy(copyLog, logFile)
+	} else {
+		log.Fatalln("Failed To Copy Log file...")
 	}
 }
