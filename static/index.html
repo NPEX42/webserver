@@ -6,7 +6,7 @@
     <title>Under Construction - Npex42.dev</title>
     <link href="css/style.css" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
-      <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
   </head>
   <body>
     <h1 class = "text-3xl self-center">Npex42.dev</h1>
@@ -17,6 +17,8 @@
       This website is running on a custom Go server that is actively being developed alongside the site, so there may be times
       when the site is down. 
     </p>
+    <div hx-get="/api/v1/projects" hx-swap="outerHTML" hx-trigger="load">
+    </div>
   </body>
   <footer>
    <p>Copyright (c) 2024 George Venn. All Rights Reserved.</p>

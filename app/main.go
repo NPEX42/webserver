@@ -72,7 +72,7 @@ func main() {
 			}
 		}
 		if conf.AllowHTTP {
-			log.Printf("Starting Server @ %v\n", s.Addr)
+			fmt.Printf("Starting Server @ %v\n", s.Addr)
 			log.Fatal(s.ListenAndServe())
 		}
 		return
