@@ -2,15 +2,12 @@ package main
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"os/signal"
 	"os/user"
-	"syscall"
 	"time"
 )
 
@@ -20,7 +17,8 @@ var (
 )
 
 func init() {
-	logFile, err := os.Create("logs/log.csv")
+	now := time.Now()
+	logFile, err := os.Create(fmt.Sprintf("logs/log-%d%d%d.csv", now.Day(), now.Month(), now.Year()))
 	if err != nil {
 		log.Fatal("Failed To Create / Open logs/log.csv")
 	}
@@ -37,20 +35,18 @@ func main() {
 
 	log.Default().SetFlags(0)
 
-	http.Handle("/", RequestLogger(logger, http.FileServer(http.Dir("./static"))))
+	go StartSignalHandler()
+
 	http.Handle("/hooks/gh_push", RequestLogger(logger, WebhookPushHandler()))
 	http.Handle("/hooks/pull", RequestLogger(logger, http.HandlerFunc(Restart)))
-
-	sigChan := make(chan os.Signal, 1)
-
-	signal.Notify(sigChan, syscall.SIGINT)
-
-	go SignalLoop(sigChan)
+	http.Handle("/api/v1/projects", RequestLogger(logger, http.HandlerFunc(GetProjects)))
 
 	conf, err := LoadServerConfig("config.json")
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	http.Handle("/", RequestLogger(logger, http.FileServer(http.Dir(conf.StaticDir))))
 
 	cert, err := conf.LoadCertificate()
 	if err != nil {
@@ -88,32 +84,6 @@ func main() {
 	s.ListenAndServeTLS("", "")
 }
 
-type ServerConfig struct {
-	CertDir   string `json:"certDir"`
-	AllowHTTP bool   `json:"allowHTTP"`
-}
-
-func LoadServerConfig(path string) (ServerConfig, error) {
-	source, err := os.ReadFile(path)
-	if err != nil {
-		return ServerConfig{}, err
-	}
-	var config ServerConfig
-	err = json.Unmarshal(source, &config)
-	if err != nil {
-		return ServerConfig{}, err
-	}
-
-	return config, nil
-}
-
-func (conf *ServerConfig) LoadCertificate() (tls.Certificate, error) {
-	certFile := fmt.Sprintf("%s/fullchain.pem", conf.CertDir)
-	keyFile := fmt.Sprintf("%s/privkey.pem", conf.CertDir)
-
-	return tls.LoadX509KeyPair(certFile, keyFile)
-}
-
 type WrappedResponseWriter struct {
 	http.ResponseWriter
 	statusCode int
@@ -130,29 +100,13 @@ func (wrw *WrappedResponseWriter) WriteHeader(code int) {
 	wrw.ResponseWriter.WriteHeader(code)
 }
 
-func SignalLoop(sigChan chan os.Signal) {
-	log.Println("[SignalHandler] - Started")
-	for {
-		SignalHandler(<-sigChan)
-	}
-}
-
-func SignalHandler(sig os.Signal) {
-	switch sig {
-	case syscall.SIGINT:
-		{
-			log.Println("[SIGINT] Shutting Down...")
-			os.Exit(0)
-		}
-	}
-}
-
 func backupLogs() {
 	now := time.Now()
 	copyPath := fmt.Sprintf("logs/log-%d%d%d.csv", now.Day(), now.Month(), now.Year())
 	copyLog, err := os.Create(copyPath)
 	if err == nil {
 		io.Copy(copyLog, logFile)
+		copyLog.Close()
 	} else {
 		log.Fatalln("Failed To Copy Log file...")
 	}

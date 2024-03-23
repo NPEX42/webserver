@@ -1,4 +1,5 @@
 {
   "certDir": "../certs",
-  "allowHTTP": true
+  "allowHTTP": true,
+  "staticDir": "./static"
 }
