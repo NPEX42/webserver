@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"net/http"
@@ -55,4 +56,19 @@ func WebhookPushHandler() http.Handler {
 func WebhookPush(_ http.ResponseWriter, r *http.Request) {
 	err := Handle.HandleEventRequest(r)
 	fmt.Println(err)
+}
+
+func GetProjects(w http.ResponseWriter, r *http.Request) {
+	projects, err := LoadProjects("./static/projects.json")
+	if err != nil {
+		w.WriteHeader(500)
+		return
+	}
+
+	var s bytes.Buffer
+	for _, proj := range projects {
+		s.WriteString(proj.Render())
+	}
+
+	fmt.Fprintf(w, "%s", s.String())
 }
