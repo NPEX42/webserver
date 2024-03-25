@@ -21,7 +21,7 @@ const PROJECT_CARD = `
 		<p class="langTag">$LANGS</p>
 		<h3>$NAME</h3>
 		<p>$DESC</p>
-		<a href="$REPO" target="_blank">Repo</a>
+	<a href="$REPO" target="_blank"><img src="https://github.com/favicon.ico"></img></a>
 	</div>
 `
 
