@@ -7,11 +7,14 @@ import (
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/NPEX42/webserver/app/blog"
 )
 
 var (
 	logger  *log.Logger
 	logFile *os.File
+	pdb     *blog.PostDB
 )
 
 func init() {
@@ -20,17 +23,34 @@ func init() {
 	if err != nil {
 		log.Fatal("Failed To Create / Open logs/log.csv")
 	}
-	logger = log.New(logFile, "", 0)
 
+	logger = log.New(logFile, "", 0)
 	logger.Println("Date-Time,Method,RemoteIP,Path,Status,DurationMicro")
+
+	pdb, err = blog.ConnectToPostDB("./posts.db")
+	if err != nil {
+		log.Fatalf("Failed To Connect To Posts Database: %s\n", err)
+	}
+
+	err = pdb.Init()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func main() {
 
+	posts, err := pdb.GetAllPosts()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Printf("Found %d Posts\n", len(posts))
+
 	log.Default().SetFlags(0)
 
 	go StartSignalHandler()
-
 	conf, err := LoadServerConfig("config.json")
 	if err != nil {
 		log.Fatal(err)
@@ -38,11 +58,12 @@ func main() {
 
 	router := http.NewServeMux()
 
-	CreateRouter(&conf, router)
+	CreateRouter(&conf, router, pdb)
 	err = StartWebserver("config.json", router)
 	if err != nil {
 		log.Fatalln(err)
 	}
+
 }
 
 type WrappedResponseWriter struct {
