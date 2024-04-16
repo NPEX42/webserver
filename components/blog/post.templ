@@ -1,0 +1,22 @@
+package blog
+
+import (
+	"fmt"
+	"github.com/NPEX42/webserver/app/blog"
+)
+
+
+templ Post(post blog.Post) {
+	<div class="blog post">
+		<h1>{post.Metadata.Title}</h1>
+		<h3>Written By: {post.Metadata.Author}</h3>
+		<hr/>
+			@templ.Raw(post.RenderHTML())
+	</div>
+}
+
+templ PostPreview(post blog.Post) {
+	<div class="blog preview">
+		<a href={templ.URL(fmt.Sprintf("/blog/posts/%d", post.Metadata.ID))}>{post.Metadata.Title} - {post.Metadata.Author}</a>
+	</div>
+}
