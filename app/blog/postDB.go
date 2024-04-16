@@ -62,8 +62,7 @@ func (pdb *PostDB) GetAllPosts() ([]Post, error) {
 
 	for rows.Next() {
 		var post Post
-		var id int
-		err = rows.Scan(&id, &post.Metadata.Title, &post.Metadata.Author, &post.Content)
+		err = rows.Scan(&post.Metadata.ID, &post.Metadata.Title, &post.Metadata.Author, &post.Content)
 		if err != nil {
 			return nil, err
 		}
@@ -91,8 +90,7 @@ func (pdb *PostDB) GetPostByID(id int) ([]Post, error) {
 
 	for rows.Next() {
 		var post Post
-		var id int
-		err = rows.Scan(&id, &post.Metadata.Title, &post.Metadata.Author, &post.Content)
+		err = rows.Scan(&post.Metadata.ID, &post.Metadata.Title, &post.Metadata.Author, &post.Content)
 		if err != nil {
 			return nil, err
 		}

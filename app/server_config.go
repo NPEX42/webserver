@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"os"
 	"os/user"
+
+	"github.com/labstack/echo/v4"
 )
 
 type ServerConfig struct {
@@ -37,11 +39,32 @@ func (conf *ServerConfig) LoadCertificate() (tls.Certificate, error) {
 	return tls.LoadX509KeyPair(certFile, keyFile)
 }
 
-func StartWebserver(path string, router *http.ServeMux) error {
+func (conf *ServerConfig) LoadCertificatePaths() (string, string) {
+	certFile := fmt.Sprintf("%s/fullchain.pem", conf.CertDir)
+	keyFile := fmt.Sprintf("%s/privkey.pem", conf.CertDir)
+
+	return certFile, keyFile
+}
+
+func StartWebserver(path string, e *echo.Echo) error {
+
+	s, err := CreateWebserver(path)
+
+	if err != nil {
+		return err
+	}
+
+	e.StartServer(s)
+
+	return nil
+
+}
+
+func CreateWebserver(path string) (*http.Server, error) {
 
 	conf, err := LoadServerConfig(path)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	cert, err := conf.LoadCertificate()
@@ -63,12 +86,11 @@ func StartWebserver(path string, router *http.ServeMux) error {
 				Addr: ":8080",
 			}
 		}
-		s.Handler = router
 		if conf.AllowHTTP {
 			fmt.Printf("Starting Server @ %v\n", s.Addr)
-			log.Fatal(s.ListenAndServe())
+			return s, nil
 		}
-		return nil
+		return nil, fmt.Errorf("Failed To Create Server\n")
 	}
 
 	s := &http.Server{
@@ -76,9 +98,7 @@ func StartWebserver(path string, router *http.ServeMux) error {
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{cert},
 		},
-		Handler: router,
 	}
 
-	return s.ListenAndServeTLS("", "")
-
+	return s, nil
 }

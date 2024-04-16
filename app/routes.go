@@ -1,13 +1,18 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/NPEX42/webserver/app/blog"
+
+	blog_comps "github.com/NPEX42/webserver/components/blog"
 	"github.com/NPEX42/webserver/pkg/middleware"
+	"github.com/labstack/echo/v4"
 )
 
 func CreateRouter(conf *ServerConfig, router *http.ServeMux, pdb *blog.PostDB) *http.ServeMux {
@@ -33,4 +38,44 @@ func CreateRouter(conf *ServerConfig, router *http.ServeMux, pdb *blog.PostDB) *
 	router.Handle("/", RequestLogger(logger, http.FileServer(http.Dir(conf.StaticDir))))
 
 	return router
+}
+
+func CreateEcho(conf *ServerConfig, e *echo.Echo, pdb *blog.PostDB) {
+
+	e.Static("/", "./static")
+
+	e.GET("/hooks/pull", echo.WrapHandler(http.HandlerFunc(Restart)))
+
+	e.GET("/blog/posts/:id", func(c echo.Context) error {
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			return c.HTML(http.StatusNotFound, fmt.Sprintf("<h1>Failed To Find Post %d</h1>", id))
+		}
+
+		post, err := pdb.GetPostByID(id)
+		if err != nil || len(post) == 0 {
+			return c.HTML(http.StatusNotFound, fmt.Sprintf("<h1>Failed To Find Post %d</h1>", id))
+
+		}
+		var sb strings.Builder
+		blog_comps.Post(post[0]).Render(context.Background(), &sb)
+		return c.HTML(http.StatusOK, sb.String())
+	})
+
+	e.GET("/blog/posts", func(c echo.Context) error {
+		posts, err := pdb.GetAllPosts()
+		if err != nil || len(posts) == 0 {
+			return c.HTML(http.StatusNotFound, fmt.Sprintf("<h1>No Posts Found</h1>"))
+
+		}
+		var sb strings.Builder
+		for _, post := range posts {
+			blog_comps.PostPreview(post).Render(context.Background(), &sb)
+		}
+		return c.HTML(http.StatusOK, sb.String())
+
+	})
+
+	e.GET("/api/v1/projects", echo.WrapHandler(http.HandlerFunc(GetProjects)))
+
 }

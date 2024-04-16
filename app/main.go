@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/NPEX42/webserver/app/blog"
+	"github.com/NPEX42/webserver/pkg/tools"
+	"github.com/labstack/echo/v4"
 )
 
 var (
@@ -40,13 +42,7 @@ func init() {
 
 func main() {
 
-	posts, err := pdb.GetAllPosts()
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("Found %d Posts\n", len(posts))
+	tools.PopulateBlogDB("./posts")
 
 	log.Default().SetFlags(0)
 
@@ -56,10 +52,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	router := http.NewServeMux()
-
-	CreateRouter(&conf, router, pdb)
-	err = StartWebserver("config.json", router)
+	e := echo.New()
+	CreateEcho(&conf, e, pdb)
+	err = StartWebserver("config.json", e)
 	if err != nil {
 		log.Fatalln(err)
 	}

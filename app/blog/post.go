@@ -9,6 +9,7 @@ import (
 type PostMetadata struct {
 	Title  string `yaml:"Title"`
 	Author string `yaml:"Author"`
+	ID     int
 }
 
 type Post struct {
