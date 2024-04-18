@@ -1,0 +1,157 @@
+{
+  "main": {
+    "id": "cdc3f1cc2d53ca22",
+    "type": "split",
+    "children": [
+      {
+        "id": "7e63b47737ea8d86",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "5fd94ab06250143a",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "01-GoWebserver.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "a0bb2aa795b3977e",
+    "type": "split",
+    "children": [
+      {
+        "id": "136291ec868f3b1b",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "e1ab23773a44cd45",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "c505803c670c9ed5",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          },
+          {
+            "id": "95d650d94e304404",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {}
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "f01c52ded8f12e70",
+    "type": "split",
+    "children": [
+      {
+        "id": "41ec387d42d73dc6",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "cf4908b6d6c5a3fe",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "01-GoWebserver.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "7d28cde5607395f3",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "01-GoWebserver.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "6d3d753c693f8ade",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true
+              }
+            }
+          },
+          {
+            "id": "c80597af579f6d89",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "01-GoWebserver.md"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "obsidian-excalidraw-plugin:Create new drawing": false
+    }
+  },
+  "active": "5fd94ab06250143a",
+  "lastOpenFiles": [
+    "dependency.png",
+    "01-GoWebserver.md",
+    "Excalidraw/Drawing 2024-04-17 12.14.32.excalidraw.md",
+    "01-GoWebserver.md~",
+    "Excalidraw"
+  ]
+}
