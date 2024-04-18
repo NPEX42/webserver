@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/NPEX42/webserver/app/blog"
@@ -22,8 +21,8 @@ func CreateRouter(conf *ServerConfig, router *http.ServeMux, pdb *blog.PostDB) *
 	router.Handle("/api/v1/projects", middleware.Logging(logger, http.HandlerFunc(GetProjects)))
 
 	router.Handle("GET /blog/posts/{id}", middleware.Logging(logger, http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
-		id, _ := strconv.Atoi(req.PathValue("id"))
-		log.Printf("ID: %d\n", id)
+		id := req.PathValue("id")
+		log.Printf("ID: %s\n", id)
 		posts, err := pdb.GetPostByID(id)
 		if err != nil {
 			log.Printf("ERR: %s\n", err)
@@ -47,16 +46,14 @@ func CreateEcho(conf *ServerConfig, e *echo.Echo, pdb *blog.PostDB) {
 	e.GET("/hooks/pull", echo.WrapHandler(http.HandlerFunc(Restart)))
 
 	e.GET("/blog/posts/:id", func(c echo.Context) error {
-		id, err := strconv.Atoi(c.Param("id"))
-		if err != nil {
-			return c.HTML(http.StatusNotFound, fmt.Sprintf("<h1>Failed To Find Post %d</h1>", id))
-		}
+		id := c.Param("id")
 
 		post, err := pdb.GetPostByID(id)
 		if err != nil || len(post) == 0 {
-			return c.HTML(http.StatusNotFound, fmt.Sprintf("<h1>Failed To Find Post %d</h1>", id))
+			return c.HTML(http.StatusNotFound, fmt.Sprintf("<h1>Failed To Find Post %s</h1>", id))
 
 		}
+
 		var sb strings.Builder
 		blog_comps.Post(post[0]).Render(context.Background(), &sb)
 		return c.HTML(http.StatusOK, sb.String())

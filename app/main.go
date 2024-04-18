@@ -29,12 +29,6 @@ func init() {
 	logger = log.New(logFile, "", 0)
 	logger.Println("Date-Time,Method,RemoteIP,Path,Status,DurationMicro")
 
-	pdb, err = blog.ConnectToPostDB("./posts.db")
-	if err != nil {
-		log.Fatalf("Failed To Connect To Posts Database: %s\n", err)
-	}
-
-	err = pdb.Init()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -43,6 +37,11 @@ func init() {
 func main() {
 
 	tools.PopulateBlogDB("./posts")
+
+	pdb, err := blog.ConnectToPostDB("./posts.db")
+	if err != nil {
+		log.Fatalf("Failed To Connect To Posts Database: %s\n", err)
+	}
 
 	log.Default().SetFlags(0)
 

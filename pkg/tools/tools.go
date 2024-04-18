@@ -1,10 +1,16 @@
 package tools
 
 import (
+	"bytes"
+	"crypto/sha1"
+	"encoding/base64"
+	"encoding/binary"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/NPEX42/webserver/app/blog"
 	"github.com/adrg/frontmatter"
@@ -20,7 +26,6 @@ func PopulateBlogDB(dir string) {
 
 	fmt.Printf("Found %d Posts\n", len(matches))
 
-	os.Remove("./posts.db")
 	pdb, err := blog.ConnectToPostDB("./posts.db")
 	if err != nil {
 		log.Fatalf("Error: %s\n", err)
@@ -28,32 +33,80 @@ func PopulateBlogDB(dir string) {
 
 	pdb.Init()
 
+	defer pdb.Close()
+
 	for _, match := range matches {
-		file, err := os.ReadFile(fmt.Sprintf("%s/%s", dir, match))
-		if err != nil {
-			log.Fatal(err)
-		}
-		var meta blog.PostMetadata
-		rest, err := frontmatter.MustParse(strings.NewReader(string(file)), &meta)
-		if err != nil {
-			log.Printf("ERR IN POST %s: %s - SKIPPING\n", match, err)
+
+		filepath := fmt.Sprintf("%s/%s", dir, match)
+
+		if strings.Contains(filepath, "excalidraw") {
 			continue
 		}
-
-		fmt.Printf("%s - %s - %s\n", match, meta.Title, meta.Author)
-
-		post := blog.Post{
-			Metadata: meta,
-			Content:  string(rest),
-		}
-
-		res, err := pdb.CreateNewPost(post)
 
 		if err != nil {
 			log.Fatalf("Error: %s\n", err)
 		}
-		id, _ := (*res).LastInsertId()
-		log.Printf("Created! ID: %d\n", id)
+
+		file, err := os.ReadFile(filepath)
+		if err != nil {
+			log.Fatal(err)
+		}
+		var meta blog.PostMetadata
+
+		hash := sha1.New()
+
+		uploadTime := time.Now()
+		var b []byte
+
+		b = binary.BigEndian.AppendUint16(b, uint16(uploadTime.UnixMilli()))
+
+		if _, err := io.Copy(hash, bytes.NewReader(b)); err != nil {
+			log.Fatal(err)
+		}
+
+		_, err = frontmatter.MustParse(strings.NewReader(string(file)), &meta)
+		if err != nil {
+			log.Printf("ERR IN POST %s: %s - SKIPPING\n", match, err)
+			continue
+		}
+		meta.ID = base64.RawURLEncoding.EncodeToString(hash.Sum(nil)[0:4])
+
+		post := blog.Post{
+			Metadata: meta,
+			Filepath: filepath,
+		}
+
+		samePosts, err := pdb.GetPostByTitle(meta.Title)
+
+		log.Println(samePosts)
+		if len(samePosts) == 0 {
+			_, err = pdb.CreateNewPost(post)
+			if err != nil {
+				log.Fatalf("Error: %s\n", err)
+			}
+			fmt.Printf("Created: %s - %s - %s - %s\n", match, meta.Title, meta.Author, meta.ID)
+		} else {
+			log.Println("Skipping Post")
+			continue
+		}
+
+		if err != nil {
+			log.Fatalf("Error: %s\n", err)
+		}
 	}
 
+}
+
+func DeletePost(id string) {
+	pdb, err := blog.ConnectToPostDB("./posts.db")
+	if err != nil {
+		log.Fatalf("Error: %s\n", err)
+	}
+
+	defer pdb.Close()
+
+	err = pdb.DeletePostByID(id)
+	if err != nil {
+		log.Fatalf("Error: %s\n", err)
+	}
 }
