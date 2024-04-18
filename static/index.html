@@ -10,6 +10,7 @@
   </head>
   <body>
     <h1 class = "text-3xl self-center">Npex42.dev</h1>
+	<a href="/blog/posts">Blog Posts</a>
     <p>
       Welcome to Npex42.dev - A Portfolio Site for George Venn. The site is currently under construction so please be patient
       while I add more stuff to the site.
@@ -19,6 +20,13 @@
     </p>
     <div hx-get="/api/v1/projects" hx-swap="outerHTML" hx-trigger="load">
     </div>
+
+
+	<hr/>
+	<h3>Blog Posts</h3>
+	<div hx-get="/blog/posts" hx-swap="outerHTML" hx-trigger="load">
+    </div>
+
   </body>
   <footer>
    <p>Copyright (c) 2024 George Venn. All Rights Reserved.</p>

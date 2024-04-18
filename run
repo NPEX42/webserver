@@ -1,3 +1,4 @@
-#/usr/bin/bash
+#!/usr/bin/bash
 
-sudo daemon -n website -X "sudo go run ./..."
+templ generate -path ./components
+go run ./app

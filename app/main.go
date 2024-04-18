@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/NPEX42/webserver/app/blog"
+	"github.com/NPEX42/webserver/pkg/tools"
+	"github.com/labstack/echo/v4"
 )
 
 var (
@@ -27,12 +29,6 @@ func init() {
 	logger = log.New(logFile, "", 0)
 	logger.Println("Date-Time,Method,RemoteIP,Path,Status,DurationMicro")
 
-	pdb, err = blog.ConnectToPostDB("./posts.db")
-	if err != nil {
-		log.Fatalf("Failed To Connect To Posts Database: %s\n", err)
-	}
-
-	err = pdb.Init()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,13 +36,12 @@ func init() {
 
 func main() {
 
-	posts, err := pdb.GetAllPosts()
+	tools.PopulateBlogDB("./posts")
 
+	pdb, err := blog.ConnectToPostDB("./posts.db")
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("Failed To Connect To Posts Database: %s\n", err)
 	}
-
-	log.Printf("Found %d Posts\n", len(posts))
 
 	log.Default().SetFlags(0)
 
@@ -56,10 +51,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	router := http.NewServeMux()
-
-	CreateRouter(&conf, router, pdb)
-	err = StartWebserver("config.json", router)
+	e := echo.New()
+	CreateEcho(&conf, e, pdb)
+	err = StartWebserver("config.json", e)
 	if err != nil {
 		log.Fatalln(err)
 	}

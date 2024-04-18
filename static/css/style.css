@@ -1,3 +1,12 @@
+:root {
+	--banner_bg: #8797B2;
+	--background: #5D707F;
+}
+
+body {
+	background: var(--background);
+}
+
 h1 {
   text-align: center;
 }
@@ -5,10 +14,16 @@ h1 {
 footer {
   position: fixed;
   bottom: 0;
-  width: 100%
+  width: 100%;
 }
 
 	
 .langTag {
-    font-size: 8pt
+    font-size: 8pt;
+}
+
+.banner h1 {
+	background: var(--banner_bg);
+	text-align: center;
+	border-radius: 8px;
 }

@@ -2,8 +2,9 @@ package blog
 
 import (
 	"database/sql"
-	_ "github.com/mattn/go-sqlite3"
 	"log"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 type PostDB struct {
@@ -27,16 +28,14 @@ func (pdb *PostDB) Init() error {
 		return err
 	}
 
-	res, err := tx.Exec(`CREATE TABLE IF NOT EXISTS "posts" (
-	"ID"	INTEGER,
+	_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS "posts" (
+	"ID"	TEXT,
 	"Title"	TEXT DEFAULT 'Empty Post',
 	"Author"	TEXT DEFAULT 'George Venn',
-	"Contents"	TEXT DEFAULT '# Empty Post',
-	PRIMARY KEY("ID" AUTOINCREMENT)
+	"Filepath"	TEXT DEFAULT '',
+	PRIMARY KEY("ID")
 	)
 `)
-
-	log.Println(res)
 
 	if err != nil {
 		tx.Rollback()
@@ -48,12 +47,8 @@ func (pdb *PostDB) Init() error {
 }
 
 func (pdb *PostDB) GetAllPosts() ([]Post, error) {
-	tx, err := pdb.db.Begin()
-	if err != nil {
-		return nil, err
-	}
 
-	rows, err := tx.Query(`SELECT * FROM "posts"`)
+	rows, err := pdb.db.Query(`SELECT * FROM "posts"`)
 	if err != nil {
 		return nil, err
 	}
@@ -62,8 +57,7 @@ func (pdb *PostDB) GetAllPosts() ([]Post, error) {
 
 	for rows.Next() {
 		var post Post
-		var id int
-		err = rows.Scan(&id, &post.Metadata.Title, &post.Metadata.Author, &post.Content)
+		err = rows.Scan(&post.Metadata.ID, &post.Metadata.Title, &post.Metadata.Author, &post.Filepath)
 		if err != nil {
 			return nil, err
 		}
@@ -76,13 +70,9 @@ func (pdb *PostDB) GetAllPosts() ([]Post, error) {
 
 }
 
-func (pdb *PostDB) GetPostByID(id int) ([]Post, error) {
-	tx, err := pdb.db.Begin()
-	if err != nil {
-		return nil, err
-	}
+func (pdb *PostDB) GetPostByID(id string) ([]Post, error) {
 
-	rows, err := tx.Query(`SELECT * FROM "posts" WHERE ID == ?`, id)
+	rows, err := pdb.db.Query(`SELECT * FROM "posts" WHERE ID == ?`, id)
 	if err != nil {
 		return nil, err
 	}
@@ -91,8 +81,7 @@ func (pdb *PostDB) GetPostByID(id int) ([]Post, error) {
 
 	for rows.Next() {
 		var post Post
-		var id int
-		err = rows.Scan(&id, &post.Metadata.Title, &post.Metadata.Author, &post.Content)
+		err = rows.Scan(&post.Metadata.ID, &post.Metadata.Title, &post.Metadata.Author, &post.Filepath)
 		if err != nil {
 			return nil, err
 		}
@@ -103,6 +92,35 @@ func (pdb *PostDB) GetPostByID(id int) ([]Post, error) {
 
 	return posts, nil
 
+}
+
+func (pdb *PostDB) GetPostByTitle(title string) ([]Post, error) {
+
+	rows, err := pdb.db.Query(`SELECT * FROM "posts" WHERE Title == ?`, title)
+	if err != nil {
+		return nil, err
+	}
+
+	var posts []Post
+
+	for rows.Next() {
+		var post Post
+		err = rows.Scan(&post.Metadata.ID, &post.Metadata.Title, &post.Metadata.Author, &post.Filepath)
+		if err != nil {
+			return nil, err
+		}
+
+		posts = append(posts, post)
+
+	}
+
+	return posts, nil
+
+}
+
+func (pdb *PostDB) DeletePostByID(id string) error {
+	_, err := pdb.db.Exec("DELETE FROM posts WHERE ID == ?", id)
+	return err
 }
 
 func (pdb *PostDB) CreateNewPost(post Post) (*sql.Result, error) {
@@ -112,18 +130,32 @@ func (pdb *PostDB) CreateNewPost(post Post) (*sql.Result, error) {
 	}
 
 	res, err := tx.Exec(`INSERT INTO "posts" 
-	(Title, Author, Contents)
-	VALUES (?, ?, ?)`,
+	(ID, Title, Author, Filepath)
+	VALUES (?, ?, ?, ?)`,
+		post.Metadata.ID,
 		post.Metadata.Title,
 		post.Metadata.Author,
-		post.Content)
+		post.Filepath)
 
 	if err != nil {
 		tx.Rollback()
+		log.Printf("Error: %s\n", err)
 		return nil, err
 	}
 
-	tx.Commit()
+	err = tx.Commit()
+	if err != nil {
+		log.Printf("Error: %s\n", err)
+		return nil, err
+	}
+
+	rowsAffected, _ := res.RowsAffected()
+
+	log.Printf("Rows Affected: %d\n", rowsAffected)
 
 	return &res, nil
+}
+
+func (pdb *PostDB) Close() {
+	pdb.db.Close()
 }
