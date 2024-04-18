@@ -23,7 +23,7 @@ func main() {
 
 		post, err := pdb.GetPostByID(id)
 		if err != nil || len(post) == 0 {
-			return c.HTML(http.StatusNotFound, fmt.Sprintf("<h1>Failed To Find Post %d</h1>", id))
+			return c.HTML(http.StatusNotFound, fmt.Sprintf("<h1>Failed To Find Post %s</h1>", id))
 
 		}
 
