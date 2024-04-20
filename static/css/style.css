@@ -17,6 +17,11 @@ footer {
   width: 100%;
 }
 
+footer.post {
+  	position: relative;
+	width: 100%;
+}
+
 	
 .langTag {
     font-size: 8pt;
@@ -37,7 +42,7 @@ h3.author {
 	border-radius: 8px;
 }
 
-img {
+img.post_img {
 	border-radius: 8px;
 	border: solid 1.5vmin;
 	display: block;

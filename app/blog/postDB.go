@@ -17,32 +17,29 @@ func ConnectToPostDB(filepath string) (*PostDB, error) {
 		return nil, err
 	}
 
+	log.Println("Opened DB")
+
 	return &PostDB{
 		db: db,
 	}, nil
 }
 
 func (pdb *PostDB) Init() error {
-	tx, err := pdb.db.Begin()
-	if err != nil {
-		return err
-	}
 
-	_, err = tx.Exec(`CREATE TABLE IF NOT EXISTS "posts" (
-	"ID"	TEXT,
-	"Title"	TEXT DEFAULT 'Empty Post',
+	_, err := pdb.db.Exec(`CREATE TABLE IF NOT EXISTS "posts" (
+	"ID"		TEXT,
+	"Title"		TEXT DEFAULT 'Empty Post',
 	"Author"	TEXT DEFAULT 'George Venn',
 	"Filepath"	TEXT DEFAULT '',
+	"Views"		INTEGER DEFAULT 0,
 	PRIMARY KEY("ID")
 	)
-`)
+	`)
 
 	if err != nil {
-		tx.Rollback()
 		return err
 	}
 
-	tx.Commit()
 	return nil
 }
 
@@ -118,18 +115,37 @@ func (pdb *PostDB) GetPostByTitle(title string) ([]Post, error) {
 
 }
 
+func (pdb *PostDB) GetPostByFilepath(title string) ([]Post, error) {
+
+	rows, err := pdb.db.Query(`SELECT * FROM "posts" WHERE Filepath == ?`, title)
+	if err != nil {
+		return nil, err
+	}
+
+	var posts []Post
+
+	for rows.Next() {
+		var post Post
+		err = rows.Scan(&post.Metadata.ID, &post.Metadata.Title, &post.Metadata.Author, &post.Filepath)
+		if err != nil {
+			return nil, err
+		}
+
+		posts = append(posts, post)
+
+	}
+
+	return posts, nil
+
+}
+
 func (pdb *PostDB) DeletePostByID(id string) error {
 	_, err := pdb.db.Exec("DELETE FROM posts WHERE ID == ?", id)
 	return err
 }
 
 func (pdb *PostDB) CreateNewPost(post Post) (*sql.Result, error) {
-	tx, err := pdb.db.Begin()
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := tx.Exec(`INSERT INTO "posts" 
+	res, err := pdb.db.Exec(`INSERT INTO "posts" 
 	(ID, Title, Author, Filepath)
 	VALUES (?, ?, ?, ?)`,
 		post.Metadata.ID,
@@ -137,13 +153,6 @@ func (pdb *PostDB) CreateNewPost(post Post) (*sql.Result, error) {
 		post.Metadata.Author,
 		post.Filepath)
 
-	if err != nil {
-		tx.Rollback()
-		log.Printf("Error: %s\n", err)
-		return nil, err
-	}
-
-	err = tx.Commit()
 	if err != nil {
 		log.Printf("Error: %s\n", err)
 		return nil, err
@@ -157,5 +166,6 @@ func (pdb *PostDB) CreateNewPost(post Post) (*sql.Result, error) {
 }
 
 func (pdb *PostDB) Close() {
+	log.Printf("Closing DB")
 	pdb.db.Close()
 }

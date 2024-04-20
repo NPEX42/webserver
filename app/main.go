@@ -16,12 +16,13 @@ import (
 var (
 	logger  *log.Logger
 	logFile *os.File
-	pdb     *blog.PostDB
+	Pdb     *blog.PostDB
 )
 
 func init() {
 	now := time.Now()
 	logFile, err := os.Create(fmt.Sprintf("logs/log-%d%d%d.csv", now.Day(), now.Month(), now.Year()))
+
 	if err != nil {
 		log.Fatal("Failed To Create / Open logs/log.csv")
 	}
@@ -36,14 +37,13 @@ func init() {
 
 func main() {
 
+	log.Default().SetFlags(log.Flags() | log.Lshortfile)
 	tools.PopulateBlogDB("./posts")
 
-	pdb, err := blog.ConnectToPostDB("./posts.db")
+	Pdb, err := blog.ConnectToPostDB("./posts.db")
 	if err != nil {
 		log.Fatalf("Failed To Connect To Posts Database: %s\n", err)
 	}
-
-	log.Default().SetFlags(0)
 
 	go StartSignalHandler()
 	conf, err := LoadServerConfig("config.json")
@@ -52,7 +52,7 @@ func main() {
 	}
 
 	e := echo.New()
-	CreateEcho(&conf, e, pdb)
+	CreateEcho(&conf, e, Pdb)
 	err = StartWebserver("config.json", e)
 	if err != nil {
 		log.Fatalln(err)

@@ -28,6 +28,7 @@ func SignalHandler(sig os.Signal) {
 	case syscall.SIGINT:
 		{
 			signal_logger.Println("[SIGINT] Shutting Down...")
+			Pdb.Close()
 			os.Exit(0)
 		}
 	}

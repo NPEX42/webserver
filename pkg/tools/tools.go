@@ -76,7 +76,7 @@ func PopulateBlogDB(dir string) {
 			Filepath: filepath,
 		}
 
-		samePosts, err := pdb.GetPostByTitle(meta.Title)
+		samePosts, err := pdb.GetPostByFilepath(post.Filepath)
 
 		log.Println(samePosts)
 		if len(samePosts) == 0 {

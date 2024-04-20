@@ -3,6 +3,7 @@ package blog
 import (
 	"fmt"
 	"github.com/NPEX42/webserver/app/blog"
+	"github.com/NPEX42/webserver/components/common"
 )
 
 
@@ -14,6 +15,10 @@ templ Post(post blog.Post) {
 		<hr/>
 			@templ.Raw(post.RenderHTML())
 	</div>
+
+
+	<hr />
+	@common.Footer("post")
 }
 
 templ PostPreview(post blog.Post) {
