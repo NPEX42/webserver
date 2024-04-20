@@ -2,4 +2,3 @@ certs/**
 .secret
 server
 *.csv
-posts.db
