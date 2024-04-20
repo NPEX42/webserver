@@ -1,6 +1,6 @@
 :root {
-	--banner_bg: #8797B2;
-	--background: #5D707F;
+	--banner_bg: #7F93A5;
+	--background: #6F8395;
 }
 
 body {
@@ -22,8 +22,25 @@ footer {
     font-size: 8pt;
 }
 
-.banner h1 {
+h1.banner {
 	background: var(--banner_bg);
 	text-align: center;
 	border-radius: 8px;
+}
+
+h3.author {
+	background: var(--banner_bg);
+	text-align: left;
+	width: fit-content;
+	height: fit-content;
+	padding: 5px;
+	border-radius: 8px;
+}
+
+img {
+	border-radius: 8px;
+	border: solid 1.5vmin;
+	display: block;
+  	margin-left: auto;
+  	margin-right: auto;
 }
