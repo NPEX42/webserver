@@ -10,7 +10,7 @@ templ Post(post blog.Post) {
     <link href="/css/style.css" rel="stylesheet"/>
 	<div class="blog post">
 		<h1 class="banner">{post.Metadata.Title}</h1>
-		<h3>Written By: {post.Metadata.Author}</h3>
+		<h3 class="author">Written By: {post.Metadata.Author}</h3>
 		<hr/>
 			@templ.Raw(post.RenderHTML())
 	</div>
