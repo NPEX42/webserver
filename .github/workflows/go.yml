@@ -20,9 +20,6 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '1.22'
-    - name: Workspace Tidy
-      run: go work tidy
-
     - name: Build Server
       run: go build -o wserver -v ./server/app
 
