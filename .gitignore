@@ -1,4 +1,4 @@
 certs/**
 .secret
-server
+wserver
 *.csv
