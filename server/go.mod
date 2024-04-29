@@ -5,6 +5,7 @@ go 1.21
 toolchain go1.22.0
 
 require (
+	github.com/a-h/templ v0.2.663
 	github.com/adrg/frontmatter v0.2.0
 	github.com/bmatcuk/doublestar/v4 v4.6.1
 	github.com/cbrgm/githubevents v1.13.0
@@ -21,7 +22,6 @@ require (
 	github.com/BurntSushi/toml v0.3.1 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230828082145-3c4c8a2d2371 // indirect
-	github.com/a-h/templ v0.2.663 // indirect
 	github.com/cloudflare/circl v1.3.7 // indirect
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect

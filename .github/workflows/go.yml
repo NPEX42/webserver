@@ -20,11 +20,8 @@ jobs:
       uses: actions/setup-go@v4
       with:
         go-version: '1.22'
-    - name: Mod Tidy
-      run: go mod tidy
+    - name: Build Server
+      run: go build -o wserver -v ./server/app
 
-    - name: Build
-      run: go build -o server -v ./app
-
-    - name: Test
-      run: go test -v ./...
+    - name: Test Server
+      run: go test -v ./server/...

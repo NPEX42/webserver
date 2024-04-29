@@ -61,7 +61,7 @@ as my router. This, honestly, was much easier than I expected thanks to Echo's c
 From this point, this project is in desperate need of a refactor. The structure looks more like
 *This:* 
 
-<img src="/imgs/dependency.png"></img>
+<img class="post_img" src="/imgs/dependency.png"></img>
 
 *[XKCD - Dependency](https://xkcd.com/2347)*
 

@@ -1,4 +1,4 @@
 #!/usr/bin/bash
 
-templ generate -path ./components
-go run ./app
+templ generate -path ./server/components
+go run ./server/app
