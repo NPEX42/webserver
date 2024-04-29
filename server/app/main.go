@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/NPEX42/webserver/app/blog"
+	"github.com/NPEX42/webserver/blog/pkg/blog"
 	"github.com/NPEX42/webserver/pkg/tools"
 	"github.com/labstack/echo/v4"
 )
@@ -16,7 +16,7 @@ import (
 var (
 	logger  *log.Logger
 	logFile *os.File
-	Pdb     *blog.PostDB
+	Pdb     *blog.Blog
 )
 
 func init() {
@@ -40,12 +40,12 @@ func main() {
 	log.Default().SetFlags(log.Flags() | log.Lshortfile)
 	tools.PopulateBlogDB("./posts")
 
-	Pdb, err := blog.ConnectToPostDB("./posts.db")
+	Pdb, err := blog.Connect("./posts.json")
 	if err != nil {
 		log.Fatalf("Failed To Connect To Posts Database: %s\n", err)
 	}
 
-	go StartSignalHandler()
+	go StartSignalHandler(Pdb)
 	conf, err := LoadServerConfig("config.json")
 	if err != nil {
 		log.Fatal(err)

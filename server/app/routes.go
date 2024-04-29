@@ -7,14 +7,14 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/NPEX42/webserver/app/blog"
+	"github.com/NPEX42/webserver/blog/pkg/blog"
 
 	blog_comps "github.com/NPEX42/webserver/components/blog"
 	"github.com/NPEX42/webserver/pkg/middleware"
 	"github.com/labstack/echo/v4"
 )
 
-func CreateRouter(conf *ServerConfig, router *http.ServeMux, pdb *blog.PostDB) *http.ServeMux {
+func CreateRouter(conf *ServerConfig, router *http.ServeMux, pdb *blog.Blog) *http.ServeMux {
 
 	router.Handle("GET /hooks/gh_push", middleware.Logging(logger, WebhookPushHandler()))
 	router.Handle("/hooks/pull", middleware.Logging(logger, http.HandlerFunc(Restart)))
@@ -39,7 +39,7 @@ func CreateRouter(conf *ServerConfig, router *http.ServeMux, pdb *blog.PostDB) *
 	return router
 }
 
-func CreateEcho(conf *ServerConfig, e *echo.Echo, pdb *blog.PostDB) {
+func CreateEcho(conf *ServerConfig, e *echo.Echo, pdb *blog.Blog) {
 
 	e.Static("/", "./static")
 
@@ -66,6 +66,9 @@ func CreateEcho(conf *ServerConfig, e *echo.Echo, pdb *blog.PostDB) {
 
 		}
 		var sb strings.Builder
+
+		sb.WriteString(`<link href="/css/dark.css" rel="stylesheet">`)
+
 		for _, post := range posts {
 			blog_comps.PostPreview(post).Render(context.Background(), &sb)
 		}

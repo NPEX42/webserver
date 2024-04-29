@@ -1,52 +1,106 @@
 package blog
 
 import (
-	"database/sql"
+	"encoding/json"
 	"fmt"
+	"io"
 	"log"
-
-	_ "github.com/mattn/go-sqlite3"
+	"os"
 )
 
 type Blog struct {
-	db *sql.DB
+	posts    []Post
+	filepath string
 }
 
 func Connect(uri string) (*Blog, error) {
-	db, err := sql.Open("sqlite3", uri)
+	var posts []Post
+	file, err := OpenOrCreate(uri)
+
 	if err != nil {
-		log.Printf("Failed To Open DB: %s\n", err)
 		return nil, err
 	}
 
-	return &Blog{db: db}, nil
-}
+	data, err := io.ReadAll(file)
 
-func (b *Blog) Close() {
-	b.db.Close()
-}
-
-func (b *Blog) Query(query string, args ...any) (*sql.Rows, error) {
-	return b.db.Query(query, args...)
-}
-
-func (b *Blog) Exec(query string, args ...any) (sql.Result, error) {
-	tx, err := b.db.Begin()
 	if err != nil {
-		log.Printf("Failed To Begin Transaction: %s\n", err)
-		return &EmptyResult{}, err
+		return nil, err
 	}
 
-	result, err := tx.Exec(query, args...)
+	json.Unmarshal(data, &posts)
+
+	return &Blog{posts: posts, filepath: uri}, nil
+}
+
+func (b *Blog) Save() {
+	data, err := json.Marshal(b.posts)
 	if err != nil {
-		tx.Rollback()
-		log.Printf("Failed To Execute Query: %q\n\t%s\n", query, err)
-		return &EmptyResult{}, err
+		log.Println(err)
+		return
 	}
 
-	tx.Commit()
+	os.WriteFile(b.filepath, data, os.ModePerm)
+}
 
-	return result, nil
+func (b *Blog) GetPostByID(id string) ([]Post, error) {
+
+	var posts []Post
+
+	for _, post := range b.posts {
+		if post.ID == id {
+			posts = append(posts, post)
+		}
+	}
+
+	return posts, nil
+
+}
+
+func (b *Blog) DeletePostByID(id string) error {
+
+	var posts []Post
+
+	for _, post := range b.posts {
+		if post.ID != id {
+			posts = append(posts, post)
+		}
+	}
+
+	b.posts = posts
+
+	return nil
+
+}
+
+func (b *Blog) GetPostByFilePath(filepath string) ([]Post, error) {
+
+	var posts []Post
+
+	for _, post := range b.posts {
+		if post.Filepath == filepath {
+			posts = append(posts, post)
+		}
+	}
+
+	return posts, nil
+
+}
+
+func (b *Blog) GetAllPosts() ([]Post, error) {
+	return b.posts, nil
+}
+
+func (b *Blog) CreateNewPost(post Post) error {
+	for i, p := range b.posts {
+		if p.ID == post.ID {
+			b.posts[i] = post
+			return nil
+		}
+	}
+
+	b.posts = append(b.posts, post)
+	b.Save()
+	return nil
 }
 
 type EmptyResult struct {

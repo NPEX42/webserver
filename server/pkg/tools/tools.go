@@ -1,19 +1,13 @@
 package tools
 
 import (
-	"bytes"
-	"crypto/sha1"
-	"encoding/base64"
-	"encoding/binary"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/NPEX42/webserver/app/blog"
-	"github.com/adrg/frontmatter"
+	"github.com/NPEX42/webserver/blog/pkg/blog"
 	"github.com/bmatcuk/doublestar/v4"
 )
 
@@ -26,14 +20,12 @@ func PopulateBlogDB(dir string) {
 
 	fmt.Printf("Found %d Posts\n", len(matches))
 
-	pdb, err := blog.ConnectToPostDB("./posts.db")
+	pdb, err := blog.Connect("./posts.json")
 	if err != nil {
 		log.Fatalf("Error: %s\n", err)
 	}
 
-	pdb.Init()
-
-	defer pdb.Close()
+	defer pdb.Save()
 
 	for _, match := range matches {
 
@@ -47,44 +39,19 @@ func PopulateBlogDB(dir string) {
 			log.Fatalf("Error: %s\n", err)
 		}
 
-		file, err := os.ReadFile(filepath)
-		if err != nil {
-			log.Fatal(err)
-		}
-		var meta blog.PostMetadata
+		post, err := blog.LoadFromMarkdownFile(filepath)
 
-		hash := sha1.New()
+		post.ID = blog.GetPostID(time.Now())
 
-		uploadTime := time.Now()
-		var b []byte
-
-		b = binary.BigEndian.AppendUint16(b, uint16(uploadTime.UnixMilli()))
-
-		if _, err := io.Copy(hash, bytes.NewReader(b)); err != nil {
-			log.Fatal(err)
-		}
-
-		_, err = frontmatter.MustParse(strings.NewReader(string(file)), &meta)
-		if err != nil {
-			log.Printf("ERR IN POST %s: %s - SKIPPING\n", match, err)
-			continue
-		}
-		meta.ID = base64.RawURLEncoding.EncodeToString(hash.Sum(nil)[0:4])
-
-		post := blog.Post{
-			Metadata: meta,
-			Filepath: filepath,
-		}
-
-		samePosts, err := pdb.GetPostByFilepath(post.Filepath)
+		samePosts, err := pdb.GetPostByFilePath(post.Filepath)
 
 		log.Println(samePosts)
 		if len(samePosts) == 0 {
-			_, err = pdb.CreateNewPost(post)
+			err = pdb.CreateNewPost(post)
 			if err != nil {
 				log.Fatalf("Error: %s\n", err)
 			}
-			fmt.Printf("Created: %s - %s - %s - %s\n", match, meta.Title, meta.Author, meta.ID)
+			fmt.Printf("Created: %s - %s - %s - %s\n", match, post.Title, post.Author, post.ID)
 		} else {
 			log.Println("Skipping Post")
 			continue
@@ -95,15 +62,17 @@ func PopulateBlogDB(dir string) {
 		}
 	}
 
+	pdb.Save()
+
 }
 
 func DeletePost(id string) {
-	pdb, err := blog.ConnectToPostDB("./posts.db")
+	pdb, err := blog.Connect("./posts.json")
 	if err != nil {
 		log.Fatalf("Error: %s\n", err)
 	}
 
-	defer pdb.Close()
+	pdb.Save()
 
 	err = pdb.DeletePostByID(id)
 	if err != nil {

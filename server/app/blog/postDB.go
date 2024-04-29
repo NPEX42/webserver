@@ -145,24 +145,8 @@ func (pdb *PostDB) DeletePostByID(id string) error {
 }
 
 func (pdb *PostDB) CreateNewPost(post Post) (*sql.Result, error) {
-	res, err := pdb.db.Exec(`INSERT INTO "posts" 
-	(ID, Title, Author, Filepath)
-	VALUES (?, ?, ?, ?)`,
-		post.Metadata.ID,
-		post.Metadata.Title,
-		post.Metadata.Author,
-		post.Filepath)
 
-	if err != nil {
-		log.Printf("Error: %s\n", err)
-		return nil, err
-	}
-
-	rowsAffected, _ := res.RowsAffected()
-
-	log.Printf("Rows Affected: %d\n", rowsAffected)
-
-	return &res, nil
+	return nil, sql.ErrNoRows
 }
 
 func (pdb *PostDB) Close() {

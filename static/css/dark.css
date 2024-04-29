@@ -1,0 +1,57 @@
+:root {
+	--background: #121212;
+	--banner-background: #343a40;
+	--link-background: lightgrey;
+	--link-text-color: black;
+
+	--content-text-color: white;
+	--border-radius: 4px;
+}
+
+body {
+	font-family: Arial;
+	color: var(--content-text-color);
+	background: var(--background);
+
+	margin: 5px;
+}
+
+h1 {
+	background: var(--banner-background);
+	border-radius: var(--border-radius);
+	color: var(--content-text-color);
+	text-align: center;
+}
+
+h2 h3 h4 {
+	font-size: 16pt;
+}
+
+img {
+	background: var(--link-background);
+	padding: 1px;
+	border-radius: var(--border-radius);
+}
+
+ul.navbar {
+	list-style: none;
+	display: flex;
+}
+
+
+a.navlink {
+	color: var(--background);
+    background: var(--link-background);
+    border-radius: var(--border-radius);
+    padding: 2px;
+    text-decoration: none;
+	margin: 10px;
+}
+
+a {
+	color: var(--content-text-color);
+}
+
+ul {
+	list-style: circle;
+}

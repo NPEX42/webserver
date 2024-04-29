@@ -2,27 +2,27 @@ package blog
 
 import (
 	"fmt"
-	"github.com/NPEX42/webserver/app/blog"
+	"github.com/NPEX42/webserver/blog/pkg/blog"
 	"github.com/NPEX42/webserver/components/common"
 )
 
 
 templ Post(post blog.Post) {
-    <link href="/css/style.css" rel="stylesheet"/>
+	@common.Header("Blog")
+	<hr/>
 	<div class="blog post">
-		<h1 class="banner">{post.Metadata.Title}</h1>
-		<h3 class="author">Written By: {post.Metadata.Author}</h3>
+		<h1 class="banner">{post.Title}</h1>
+		<h3 class="author">Written By: {post.Author}</h3>
 		<hr/>
 			@templ.Raw(post.RenderHTML())
 	</div>
-
-
 	<hr />
 	@common.Footer("post")
 }
 
+
 templ PostPreview(post blog.Post) {
 	<div class="blog preview">
-			<a href={templ.URL(fmt.Sprintf("/blog/posts/%s", post.Metadata.ID))}>{post.Metadata.Title}</a>
+			<a href={templ.URL(fmt.Sprintf("/blog/posts/%s", post.ID))}>{post.Title}</a>
 	</div>
 }
